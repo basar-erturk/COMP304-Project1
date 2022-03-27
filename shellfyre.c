@@ -382,11 +382,9 @@ int process_command(struct command_t *command)
 		char path[100];
 		strcat(path, "/bin/");
 
-		//getcwd(path, sizeof(path));
 		strcat(path, command->name);
 
-		char *comm[] = {path, command->args, NULL};
-		printf("path: %s, args: %s", path, command->name);
+		char *comm[] = {path, command->args[1], command->args[2], NULL};
 		if (execv(path, comm) == -1){
 			 printf("-%s: %s: command not found\n", sysname, command->name);
 		}
