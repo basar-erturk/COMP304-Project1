@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <sys/stat.h>
 const char *sysname = "shellfyre";
 
 enum return_codes
@@ -359,7 +360,31 @@ int process_command(struct command_t *command)
 		}
 	}
 
+
 	// TODO: Implement your custom commands here
+
+	int take(char *dirName) {
+		char pathInfo[1000];
+		getcwd(pathInfo, sizeof(pathInfo));
+		strcat(pathInfo, "/");
+		strcat(pathInfo, dirName);
+		mkdir(pathInfo, 0777);
+		chdir(pathInfo);
+		return SUCCESS;
+	}
+	
+
+	if (strcmp(command->name, "take") == 0) {
+		char *token = strtok(command->args[0], "/");
+
+		while (token != NULL) {
+		int takeCom = take(token);
+
+		token = strtok(NULL, "/");
+
+		}
+		return SUCCESS;	
+	}
 
 	pid_t pid = fork();
 
@@ -384,7 +409,7 @@ int process_command(struct command_t *command)
 
 		strcat(path, command->name);
 
-		char *comm[] = {path, command->args[1], command->args[2], NULL};
+		char *comm[] = {path, command->args[1], command->args[2], command->args[3], command->args[4], NULL};
 		if (execv(path, comm) == -1){
 			 printf("-%s: %s: command not found\n", sysname, command->name);
 		}
@@ -393,6 +418,7 @@ int process_command(struct command_t *command)
 	else
 	{
 		/// TODO: Wait for child to finish if command is not running in background
+		
 		wait(NULL);
 		return SUCCESS;
 	}
