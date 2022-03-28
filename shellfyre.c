@@ -7,6 +7,9 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <dirent.h>
+
+
 const char *sysname = "shellfyre";
 
 enum return_codes
@@ -363,6 +366,24 @@ int process_command(struct command_t *command)
 
 	// TODO: Implement your custom commands here
 
+	int filesearch(char *option, char *search) {
+		struct dirent ** fileListTemp;
+	
+		char path[1000];
+		getcwd(path, sizeof(path));
+	
+		int fileNum = scandir(path, &fileListTemp, NULL, alphasort);
+
+		char *newSearch = strtok(search, "\"");
+
+		for (int i = 0; i < fileNum; i++) {
+			if(strstr(fileListTemp[i]->d_name, newSearch) != NULL) 
+			       printf("%s\n", fileListTemp[i]->d_name);	
+		}
+
+		return SUCCESS;
+	}	
+
 	int take(char *dirName) {
 		char pathInfo[1000];
 		getcwd(pathInfo, sizeof(pathInfo));
@@ -373,6 +394,12 @@ int process_command(struct command_t *command)
 		return SUCCESS;
 	}
 	
+
+	if (strcmp(command->name, "filesearch") == 0) {
+		int file = filesearch(command->args[0], command->args[1]);
+
+		return SUCCESS;
+	}
 
 	if (strcmp(command->name, "take") == 0) {
 		char *token = strtok(command->args[0], "/");
@@ -385,6 +412,8 @@ int process_command(struct command_t *command)
 		}
 		return SUCCESS;	
 	}
+
+
 
 	pid_t pid = fork();
 
