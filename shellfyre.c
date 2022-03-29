@@ -366,30 +366,57 @@ int process_command(struct command_t *command)
 
 	// TODO: Implement your custom commands here
 
-	int filesearch(char *option, char *search) {
+
+	int filesearch(char *option, char *search, char *ogPath) {
 		struct dirent ** fileListTemp;
-	
+		
 		if (search == NULL) {
 			search = option;
 		}
 			
-		char path[1000];
-		getcwd(path, sizeof(path));
+		char path1[300];
+
+		getcwd(path1, sizeof(path1));
 	
-		int fileNum = scandir(path, &fileListTemp, NULL, alphasort);
+		int fileNum = scandir(path1, &fileListTemp, NULL, alphasort);
 
 		char *newSearch = strtok(search, "\"");
 
 		for (int i = 0; i < fileNum; i++) {
-			if(strstr(fileListTemp[i]->d_name, newSearch) != NULL) 
-			       printf("%s\n", fileListTemp[i]->d_name);	
+			if(strstr(fileListTemp[i]->d_name, newSearch) != NULL) { 
+				printf("%s\n", ogPath);
+		//		char *token = strtok(path1,ogPath);
+				printf(".%s/%s\n",ogPath, fileListTemp[i]->d_name);
+			}
+			
+			char str[2] = "\0";
+			str[0] = fileListTemp[i]->d_name[0];
+
+			if(strcmp(option, "-r") == 0 && strcmp(str, ".") != 0) {
+				DIR *direc;
+				char newPath[300];
+				
+				getcwd(newPath, sizeof(newPath));
+				strcat(newPath, "/");
+				strcat(newPath, fileListTemp[i]->d_name);
+				
+				direc = opendir(newPath);
+
+		
+				if(direc != NULL) {
+					chdir(newPath);
+					filesearch(option, search, ogPath);
+				}	chdir(path1);
+			}
+			
+
 		}
 		
 		return SUCCESS;
 	}	
 
 	int take(char *dirName) {
-		char pathInfo[1000];
+		char pathInfo[300];
 		getcwd(pathInfo, sizeof(pathInfo));
 		strcat(pathInfo, "/");
 		strcat(pathInfo, dirName);
@@ -400,7 +427,10 @@ int process_command(struct command_t *command)
 	
 
 	if (strcmp(command->name, "filesearch") == 0) {
-		int file = filesearch(command->args[0], command->args[1]);
+		char *ogPath;
+		
+		getcwd(ogPath, sizeof(ogPath));
+		int file = filesearch(command->args[0], command->args[1], ogPath);
 
 		return SUCCESS;
 	}
@@ -437,14 +467,15 @@ int process_command(struct command_t *command)
 		command->args[command->arg_count - 1] = NULL;
 
 		/// TODO: do your own exiec with path resolving using execv()
-		char path[100];
+		char path[300];
 		strcat(path, "/bin/");
 
 		strcat(path, command->name);
 
 		char *comm[] = {path, command->args[1], command->args[2], command->args[3], command->args[4], NULL};
+		printf("%s\n", path);
 		if (execv(path, comm) == -1){
-			 printf("-%s: %s: command not found\n", sysname, command->name);
+			 printf("path:%s  -%s: %s: command not found\n",path, sysname, command->name);
 		}
 		exit(0);
 	}
