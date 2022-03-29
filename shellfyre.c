@@ -374,6 +374,7 @@ int process_command(struct command_t *command)
 			search = option;
 		}
 			
+		//char *path1 = (char*)malloc(100*sizeof(char));
 		char path1[300];
 
 		getcwd(path1, sizeof(path1));
@@ -384,9 +385,8 @@ int process_command(struct command_t *command)
 
 		for (int i = 0; i < fileNum; i++) {
 			if(strstr(fileListTemp[i]->d_name, newSearch) != NULL) { 
-				printf("%s\n", ogPath);
-		//		char *token = strtok(path1,ogPath);
-				printf(".%s/%s\n",ogPath, fileListTemp[i]->d_name);
+				char *token = strstr(path1,ogPath);
+				printf(".%s/%s\n",token+strlen(ogPath), fileListTemp[i]->d_name);
 			}
 			
 			char str[2] = "\0";
@@ -405,13 +405,15 @@ int process_command(struct command_t *command)
 		
 				if(direc != NULL) {
 					chdir(newPath);
-					filesearch(option, search, ogPath);
-				}	chdir(path1);
+					if (filesearch(option, search, ogPath) == EXIT)
+						return EXIT;
+					chdir(path1);
+				}
 			}
 			
 
 		}
-		
+		//free(path1);
 		return SUCCESS;
 	}	
 
@@ -427,10 +429,12 @@ int process_command(struct command_t *command)
 	
 
 	if (strcmp(command->name, "filesearch") == 0) {
-		char *ogPath;
+		char ogPath[120];
 		
 		getcwd(ogPath, sizeof(ogPath));
 		int file = filesearch(command->args[0], command->args[1], ogPath);
+		if (file == EXIT)
+			return EXIT;
 
 		return SUCCESS;
 	}
@@ -467,15 +471,13 @@ int process_command(struct command_t *command)
 		command->args[command->arg_count - 1] = NULL;
 
 		/// TODO: do your own exiec with path resolving using execv()
-		char path[300];
+		char path[300]="";
 		strcat(path, "/bin/");
 
 		strcat(path, command->name);
-
 		char *comm[] = {path, command->args[1], command->args[2], command->args[3], command->args[4], NULL};
-		printf("%s\n", path);
 		if (execv(path, comm) == -1){
-			 printf("path:%s  -%s: %s: command not found\n",path, sysname, command->name);
+			 printf("-%s: %s: command not found\n", sysname, command->name);
 		}
 		exit(0);
 	}
