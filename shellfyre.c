@@ -369,6 +369,10 @@ int process_command(struct command_t *command)
 	int filesearch(char *option, char *search) {
 		struct dirent ** fileListTemp;
 	
+		if (search == NULL) {
+			search = option;
+		}
+			
 		char path[1000];
 		getcwd(path, sizeof(path));
 	
@@ -380,7 +384,7 @@ int process_command(struct command_t *command)
 			if(strstr(fileListTemp[i]->d_name, newSearch) != NULL) 
 			       printf("%s\n", fileListTemp[i]->d_name);	
 		}
-
+		
 		return SUCCESS;
 	}	
 
