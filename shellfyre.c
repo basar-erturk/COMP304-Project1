@@ -8,6 +8,17 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <ctype.h>
+
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_BLACK   "\x1b[30m"
+#define ANSI_COLOR_WHITE   "\x1b[37m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
 
 
 const char *sysname = "shellfyre";
@@ -426,7 +437,115 @@ int process_command(struct command_t *command)
 		chdir(pathInfo);
 		return SUCCESS;
 	}
-	
+
+
+	int colortext( char *color) {
+		struct dirent ** fileListTemp;
+
+		char path[300];
+		getcwd(path, sizeof(path));
+		
+		int fileNum = scandir(path, &fileListTemp, NULL, alphasort);
+		
+		char *newColor = strtok(color, "\"");
+		char validColors[100];
+
+		strcat(validColors, "Black ");
+		strcat(validColors, "Red ");
+		strcat(validColors, "Green ");
+		strcat(validColors, "Yellow ");
+		strcat(validColors, "Blue ");
+		strcat(validColors, "Magenta ");
+		strcat(validColors, "Cyan ");
+		strcat(validColors, "White");
+		strcat(validColors, "Rainbow");
+
+		bool flag = false;
+
+
+		for (int j = 0; validColors[j]; j++) {
+			validColors[j] = tolower(validColors[j]);
+		}
+
+		for (int k = 0; newColor[k]; k++) {
+			newColor[k] = tolower(newColor[k]);
+		}
+
+		if (strstr((char *)validColors, newColor) == NULL) {
+			printf("Did not enter a valid color.\n");
+
+			return SUCCESS;
+		}
+
+		for (int i = 0; i < fileNum; i++) {
+			if(strcmp(newColor, "red") == 0) {
+				printf(ANSI_COLOR_RED	"%s"	ANSI_COLOR_RESET	"\n", fileListTemp[i]->d_name);
+				
+				if (flag) 
+					newColor = "yellow";
+					continue;
+			}
+
+			if(strcmp(newColor, "green") == 0) {
+				printf(ANSI_COLOR_GREEN	"%s"	ANSI_COLOR_RESET	"\n", fileListTemp[i]->d_name);
+
+				if (flag)
+					newColor = "cyan";
+					continue;
+			}
+
+			if(strcmp(newColor, "yellow") == 0) {
+				printf(ANSI_COLOR_YELLOW	"%s"	ANSI_COLOR_RESET	"\n", fileListTemp[i]->d_name);
+
+				if(flag)
+					newColor = "green";
+					continue;
+			}
+
+			if(strcmp(newColor, "blue") == 0) {
+				printf(ANSI_COLOR_BLUE	"%s"	ANSI_COLOR_RESET	"\n", fileListTemp[i]->d_name);
+
+				if(flag) 
+					newColor = "magenta";
+					continue;
+			}
+
+
+			if(strcmp(newColor, "magenta") == 0) {
+				printf(ANSI_COLOR_MAGENTA	"%s"	ANSI_COLOR_RESET	"\n", fileListTemp[i]->d_name);
+		
+				if(flag)
+					newColor = "red";
+					continue;
+			}
+
+			if(strcmp(newColor, "cyan") == 0) {
+				printf(ANSI_COLOR_CYAN	"%s"	ANSI_COLOR_RESET	"\n", fileListTemp[i]->d_name);
+
+				if(flag)
+					newColor = "blue";
+					continue;
+			}
+
+			if(strcmp(newColor, "black") == 0)
+				printf(ANSI_COLOR_BLACK	"%s"	ANSI_COLOR_RESET	"\n", fileListTemp[i]->d_name);
+
+			if(strcmp(newColor, "white") == 0)
+				printf(ANSI_COLOR_WHITE	"%s"	ANSI_COLOR_RESET	"\n", fileListTemp[i]->d_name);
+
+			if(strcmp(newColor, "rainbow") == 0) {
+				printf(ANSI_COLOR_RED	"%s"	ANSI_COLOR_RESET	"\n", fileListTemp[i]->d_name);
+
+				flag = true;
+				newColor = "yellow";
+			}
+
+		}
+
+		return SUCCESS;
+
+	}
+
 
 	if (strcmp(command->name, "filesearch") == 0) {
 		char ogPath[120];
@@ -449,6 +568,34 @@ int process_command(struct command_t *command)
 
 		}
 		return SUCCESS;	
+	}
+
+	if (strcmp(command->name, "joker") == 0) {
+	//	char jokerPath[300] ="";
+	//	strcat(jokerPath, "/bin/crontab");
+		
+		char *jokerComm[] = {"echo","\"","*","*","*","*","*","XDG_RUNTIME_DIR=/run/user/$(id-u)"," notify-send","'kontrol'","$(curl", "-s","https://icanhazdadjoke.com)","\"","|","crontab","-", NULL};
+
+		pid_t pidJoker = fork();
+
+		if(pidJoker == 0) {
+
+
+			if(execvp("echo", jokerComm) == -1)
+				printf("-%s: %s: command not found\n", sysname, jokerComm[1]);
+			else {
+				wait(NULL);
+			}
+	
+		}
+		return SUCCESS;
+	}
+
+
+	if (strcmp(command->name, "colortext") == 0) {
+		int colortxt = colortext(command->args[0]);
+
+		return SUCCESS;
 	}
 
 
@@ -475,7 +622,7 @@ int process_command(struct command_t *command)
 		strcat(path, "/bin/");
 
 		strcat(path, command->name);
-		char *comm[] = {path, command->args[1], command->args[2], command->args[3], command->args[4], NULL};
+		char *comm[] = {path, command->args[1], command->args[2], command->args[3], command->args[4], command->args[5], command->args[6], command->args[7], NULL};
 		if (execv(path, comm) == -1){
 			 printf("-%s: %s: command not found\n", sysname, command->name);
 		}
