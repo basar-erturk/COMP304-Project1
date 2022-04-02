@@ -574,7 +574,23 @@ int process_command(struct command_t *command)
 	//	char jokerPath[300] ="";
 	//	strcat(jokerPath, "/bin/crontab");
 		
-		char *jokerComm[] = {"echo","\"","*","*","*","*","*","XDG_RUNTIME_DIR=/run/user/$(id-u)"," notify-send","'kontrol'","$(curl", "-s","https://icanhazdadjoke.com)","\"","|","crontab","-", NULL};
+//		struct command_t *commJok;
+		
+//		struct command_t *nextJok;
+
+
+//		commJok->args[0] = "echo";
+//		commJok->args[1] = "\"hi\"";
+//		commJok->args[3] = NULL;
+
+		char *jokerComm[]  = {"echo","*","*","*","*","*","XDG_RUNTIME_DIR=/run/user/$(id","-u)","notify-send","'kontrol'","\n", NULL};
+	
+
+	//	strcat(*jokerComm2->args, "crontab -");
+	//	jokerComm2->args[2] = NULL;
+
+	//	jokerComm->next = jokerComm2;
+
 
 		pid_t pidJoker = fork();
 
@@ -582,7 +598,7 @@ int process_command(struct command_t *command)
 
 
 			if(execvp("echo", jokerComm) == -1)
-				printf("-%s: %s: command not found\n", sysname, jokerComm[1]);
+				printf("-%s: %s: command not found\n", sysname, jokerComm[0]);
 			else {
 				wait(NULL);
 			}
