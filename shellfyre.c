@@ -717,21 +717,20 @@ int process_command(struct command_t *command)
 	}
 
 	if (strcmp(command->name, "joker") == 0) {
-		
 		char pathJok[150] = "";
-                getcwd(pathJok, sizeof(pathJok));
+                        getcwd(pathJok, sizeof(pathJok));
 
-                strcat(pathJok, "/");
-                strcat(pathJok, "joker.sh");
+                        strcat(pathJok, "/");
+                        strcat(pathJok, "joker.sh");
 
-       	        char commJok[150] = "";
-			
-       	        strcat(commJok, "echo \"* * * * * ");
-                strcat(commJok, pathJok);
-                strcat(commJok, " \" | crontab -");
+                        char commJok[150] = "";
 
-                system(commJok);
-		
+                        strcat(commJok, "echo \"* * * * * ");
+                        strcat(commJok, pathJok);
+                        strcat(commJok, " \" | crontab -");
+
+
+                 system(commJok);
 		
 		return SUCCESS;
 	}
