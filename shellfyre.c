@@ -717,39 +717,22 @@ int process_command(struct command_t *command)
 	}
 
 	if (strcmp(command->name, "joker") == 0) {
-	//	char jokerPath[300] ="";
-	//	strcat(jokerPath, "/bin/crontab");
 		
-//		struct command_t *commJok;
+		char pathJok[150] = "";
+                getcwd(pathJok, sizeof(pathJok));
+
+                strcat(pathJok, "/");
+                strcat(pathJok, "joker.sh");
+
+       	        char commJok[150] = "";
+			
+       	        strcat(commJok, "echo \"* * * * * ");
+                strcat(commJok, pathJok);
+                strcat(commJok, " \" | crontab -");
+
+                system(commJok);
 		
-//		struct command_t *nextJok;
-
-
-//		commJok->args[0] = "echo";
-//		commJok->args[1] = "\"hi\"";
-//		commJok->args[3] = NULL;
-
-		char *jokerComm[]  = {"echo","*","*","*","*","*","XDG_RUNTIME_DIR=/run/user/$(id","-u)","notify-send","'kontrol'","\n", NULL};
-	
-
-	//	strcat(*jokerComm2->args, "crontab -");
-	//	jokerComm2->args[2] = NULL;
-
-	//	jokerComm->next = jokerComm2;
-
-
-		pid_t pidJoker = fork();
-
-		if(pidJoker == 0) {
-
-
-			if(execvp("echo", jokerComm) == -1)
-				printf("-%s: %s: command not found\n", sysname, jokerComm[0]);
-			else {
-				wait(NULL);
-			}
-	
-		}
+		
 		return SUCCESS;
 	}
 
