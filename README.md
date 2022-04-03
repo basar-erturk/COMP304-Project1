@@ -3,7 +3,7 @@
 In this project, an interactive Unix-style operating system shell called shellfyre in C/C++ is developed. 
 
 Part 1:
-
+Basic commands are used by executing the relative file in /bin/ by utilizing path resolving. & function could not be implemented. 
 Part 2:
 
 filesearch command:
