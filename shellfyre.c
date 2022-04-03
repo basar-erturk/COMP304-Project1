@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h> //termios, TCSANOW, ECHO, ICANON
@@ -357,6 +358,27 @@ int main()
 int process_command(struct command_t *command)
 {
 	int r;
+	char hist_file[150];
+
+	int writeDirHist(char *hist_file){
+		char cwd[150];
+		if (strcmp(hist_file,"") == 0){
+
+			getcwd(cwd,sizeof(cwd));
+			strcat(hist_file,cwd);
+			strcat(hist_file,"/dir_hist.txt");
+			strcat(cwd,"\n");
+		}
+		else {
+			getcwd(cwd,sizeof(cwd));
+			strcat(cwd,"\n");
+		}
+
+		FILE *dirhist=fopen(hist_file,"a");
+		fputs(cwd,dirhist);
+		fclose(dirhist);
+		return SUCCESS;
+	}
 	if (strcmp(command->name, "") == 0)
 		return SUCCESS;
 
@@ -367,6 +389,7 @@ int process_command(struct command_t *command)
 	{
 		if (command->arg_count > 0)
 		{
+			writeDirHist(hist_file);
 			r = chdir(command->args[0]);
 			if (r == -1)
 				printf("-%s: %s: %s\n", sysname, command->name, strerror(errno));
@@ -380,7 +403,7 @@ int process_command(struct command_t *command)
 
 	int filesearch(char *option, char *search, char *ogPath) {
 		struct dirent ** fileListTemp;
-		
+	
 		if (search == NULL) {
 			search = option;
 		}
@@ -546,6 +569,103 @@ int process_command(struct command_t *command)
 
 	}
 
+	if (strcmp(command->name, "cdh") == 0){
+
+		char cwd[150];
+		if (strcmp(hist_file,"") == 0){
+
+			getcwd(cwd,sizeof(cwd));
+			strcat(hist_file,cwd);
+			strcat(hist_file,"/dir_hist.txt");
+			strcat(cwd,"\n");
+		}
+		else {
+			getcwd(cwd,sizeof(cwd));
+			strcat(cwd,"\n");
+		}
+
+		char history[10][150];
+		for (int i = 0; i < sizeof(history)/sizeof(history[0]);i++)
+			history[i][0] = '\0';
+		int count1 = 0;
+		int count2;
+		char letter = 'a';
+		char buf[150];
+	        int cha;	
+		FILE *hist = fopen(hist_file, "r");
+		fseek(hist, 0, SEEK_END);
+		while (ftell(hist) > 1 && count1 < 10){
+			fseek(hist, -2, SEEK_CUR);
+			if (ftell(hist)<=2)
+				break;
+			
+			cha = fgetc(hist);
+			count2 = 0;
+
+			while(cha != '\n'){
+				buf[count2] = cha;
+				count2++;
+				if (ftell(hist) < 2)
+					break;
+				fseek(hist, -2, SEEK_CUR);
+				cha = fgetc(hist);
+			}
+			printf("%d  %c   ",count1, letter);
+			for (int i = count2-1; i >= 0 && count2 > 0; i--){
+				printf("%c", buf[i]);
+				strncat(history[count1], &buf[i], 1);
+			}
+			strncat(history[count1], "\0", 1);
+			printf("\n");
+			count1++;
+			letter++;
+		}
+		fclose(hist);
+
+		int fd[2];
+
+		if (pipe(fd) == -1)
+			fprintf(stderr,"Pipe failed");
+
+		
+		pid_t pid = fork();
+
+		char chosenDir='f';
+
+		if (pid == 0){
+			close(fd[0]);
+			printf("Select directory by letter or number: ");
+			scanf("%c", &chosenDir);
+			if (chosenDir > 60){
+				chosenDir -= 97;
+			}
+			else {
+				chosenDir -= 48;
+			}
+
+
+			char chosenDirstr[10];
+			snprintf(chosenDirstr,9,"%d",chosenDir);
+			write(fd[1], chosenDirstr, strlen(history[chosenDir]+1));
+			exit(0);
+		}
+		else{
+			wait(NULL);
+			char dirstr[10]="";
+			close(fd[1]);
+			read(fd[0], dirstr, 10);
+			chosenDir = atoi(dirstr);	
+			writeDirHist(hist_file);
+			chdir(history[chosenDir]);
+			return SUCCESS;
+		}
+		
+	}
+
+
+
+
+	
 
 	if (strcmp(command->name, "filesearch") == 0) {
 		char ogPath[120];
@@ -560,7 +680,19 @@ int process_command(struct command_t *command)
 
 	if (strcmp(command->name, "take") == 0) {
 		char *token = strtok(command->args[0], "/");
+		/*if (strmp(cwd,"") == 0){
 
+			getcwd(cwd,sizeof(cwd));
+			strcat(hist_path, cwd);
+			strcat(hist_path,"/dir_hist.txt");
+			strcat(cwd, "\n");
+		}
+		else{
+			getcwd(cwd,sizeof(cwd));
+			strcat(cwd,"\n");
+		}
+		*/
+		writeDirHist(hist_file);
 		while (token != NULL) {
 		int takeCom = take(token);
 
