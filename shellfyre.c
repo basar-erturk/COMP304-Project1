@@ -664,7 +664,21 @@ int process_command(struct command_t *command)
 
 
 
-
+	// Basar custom command
+	if (strcmp(command->name, "wfile") == 0){
+		char text[100]="";
+		FILE *file = fopen(command->args[0],"w");
+		int i = 1;
+		while (command->args[i] != NULL){
+			strcat(text,command->args[i]);
+			strcat(text," ");
+			i++;
+		}
+		strcat(text,"\n");
+		fputs(text,file);
+		fclose(file);
+		return SUCCESS;
+	}
 	
 
 	if (strcmp(command->name, "filesearch") == 0) {
