@@ -19,6 +19,6 @@ joker command:
 The command will generate a random joke every 15 minutes and output it to the screen.
 
 colortext command:
-The command takes a color input and returns the list of file(s) in the directory, colored in input color. When the user runs the command with -r option, command searches all the sub-directories under the current directory including the current directory and returns the file list in input color. When user enters rainbow as color input, the returned list is colored in rainbow sequence.
+The command takes a color input and returns the list of file(s) in the directory, colored in input color. When the user runs the command with -r option, command searches all the sub-directories under the current directory including the current directory and returns the file list in input color. When user enters rainbow as color input, the returned list is colored in rainbow sequence. This command is implemented by Ayten Dilara Yavuz, ID: 72281.
 
 
